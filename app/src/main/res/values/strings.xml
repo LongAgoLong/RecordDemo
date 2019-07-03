@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">RecordDemo</string>
+    <string name="text_video_path">VID_%1$s.mp4</string>
+    <string name="text_no_camera_app">找不到可供调用的相机程序哦~</string>
+    <string name="no_SD_card">SD卡无法读取，请重试&#8230;</string>
+    <string name="text_permission_youRefuse">您拒绝了%1$s权限的申请&#8230;</string>
+    <string name="internet_error_tip">网络错误,请稍后重试&#8230;</string>
+</resources>
