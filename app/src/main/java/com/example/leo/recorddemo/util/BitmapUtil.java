@@ -60,8 +60,8 @@ public class BitmapUtil {
     private static GlideCircleTransform glideCircleTransform;
 
     /*
-    * 获取SD卡bitmap文件宽高
-    * */
+     * 获取SD卡bitmap文件宽高
+     * */
     public static float[] getBitmapSize(@NonNull String path) {
         float[] size = new float[2];
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -88,8 +88,8 @@ public class BitmapUtil {
     }
 
     /*
-    * 长图判断
-    * */
+     * 长图判断
+     * */
     public static boolean isLongIMG(float width, float height) {
         return (height > 600 && ((height / width) > 2.5f)
                 || height >= 8000
@@ -98,8 +98,8 @@ public class BitmapUtil {
     }
 
     /*
-    * 设置壁纸
-    * */
+     * 设置壁纸
+     * */
     public static Observable<Boolean> rxSetWallPager(Context context, Bitmap bitmap) {
         return Observable.create(e -> {
             WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
@@ -389,14 +389,19 @@ public class BitmapUtil {
         return bitmap;
     }
 
-    /*
-    * 获取视频缩略图
-    * */
-    public static Bitmap getVideoThumbnail(String videoPath) {
+    /**
+     * 获取视频缩略图
+     * getFrameAtTime 它的第一个参数不是毫秒，是微秒！！！！
+     *
+     * @param videoPath
+     * @param timeUs
+     * @return
+     */
+    public static Bitmap getVideoThumbnail(String videoPath, long timeUs) {
         MediaMetadataRetriever media = new MediaMetadataRetriever();
         try {
             media.setDataSource(videoPath);
-            return media.getFrameAtTime();
+            return media.getFrameAtTime(timeUs);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -643,7 +648,7 @@ public class BitmapUtil {
         if (null == glideCircleTransform) {
             synchronized (sDecodeLock) {
                 if (null == glideCircleTransform) {
-                    glideCircleTransform = new GlideCircleTransform(context.getApplicationContext());
+                    glideCircleTransform = new GlideCircleTransform();
                 }
             }
         }
@@ -711,11 +716,11 @@ public class BitmapUtil {
     }
 
     /*
-    * Glide圆形图片
-    * */
+     * Glide圆形图片
+     * */
     public static class GlideCircleTransform extends BitmapTransformation {
-        public GlideCircleTransform(Context context) {
-            super(context);
+        public GlideCircleTransform() {
+            super();
         }
 
         @Override
@@ -753,18 +758,18 @@ public class BitmapUtil {
     }
 
     /*
-    * Glide圆角图片
-    * */
+     * Glide圆角图片
+     * */
     public static class GlideRoundTransform extends BitmapTransformation {
 
         private static float radius = 0f;
 
-        public GlideRoundTransform(Context context) {
-            this(context, 4);
+        public GlideRoundTransform() {
+            this(4);
         }
 
-        public GlideRoundTransform(Context context, int dp) {
-            super(context);
+        public GlideRoundTransform(int dp) {
+            super();
             this.radius = Resources.getSystem().getDisplayMetrics().density * dp;
         }
 
@@ -798,8 +803,8 @@ public class BitmapUtil {
 
 
     /*
-    * glide任一圆角
-    * */
+     * glide任一圆角
+     * */
     public static class SelectableGlideRoundTransform extends BitmapTransformation {
 
         private static float topLeftRadius = 0f;
@@ -807,16 +812,16 @@ public class BitmapUtil {
         private static float bottomLeftRadius = 0f;
         private static float bottomRightRadius = 0f;
 
-        public SelectableGlideRoundTransform(Context context) {
-            this(context, 4);
+        public SelectableGlideRoundTransform() {
+            this(4);
         }
 
-        public SelectableGlideRoundTransform(Context context, int dp) {
-            this(context, dp, dp, dp, dp);
+        public SelectableGlideRoundTransform(int dp) {
+            this(dp, dp, dp, dp);
         }
 
-        public SelectableGlideRoundTransform(Context context, int topLeftRaDp, int topRightRaDp, int bottomLeftRaDp, int bottomRightRaDp) {
-            super(context);
+        public SelectableGlideRoundTransform(int topLeftRaDp, int topRightRaDp, int bottomLeftRaDp, int bottomRightRaDp) {
+            super();
             this.topLeftRadius = Resources.getSystem().getDisplayMetrics().density * topLeftRaDp;
             this.topRightRadius = Resources.getSystem().getDisplayMetrics().density * topRightRaDp;
             this.bottomLeftRadius = Resources.getSystem().getDisplayMetrics().density * bottomLeftRaDp;

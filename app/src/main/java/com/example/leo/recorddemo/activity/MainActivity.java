@@ -10,13 +10,20 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.leo.recorddemo.R;
+import com.example.leo.recorddemo.util.AppStackManager;
 import com.example.leo.recorddemo.util.DateUtil;
 import com.example.leo.recorddemo.util.FileUtils;
+import com.example.leo.recorddemo.util.RxRecordDetector;
 import com.example.leo.recorddemo.util.VideoRecordUtil;
 import com.example.leo.recorddemo.util.SDcardUtil;
 import com.example.leo.recorddemo.util.ToastUtil;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
     private Button recordBtn;
@@ -91,6 +98,45 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     file.delete();
                     break;
             }
+        }
+    }
+
+    /*
+     * 开始录制
+     * */
+    private Disposable disposable;
+
+    private void startRecord() {
+        if (!VideoRecordUtil.startRecordNoParams(context)) {
+            finish();
+        } else if (RomUtil.rom() == Target.MIUI) {
+            disposable = RxRecordDetector.start(this)
+                    .compose(this.bindUntilEvent(ActivityEvent.DESTROY))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(path -> {
+                        if (null != disposable && !disposable.isDisposed()) {
+                            disposable.dispose();
+                        }
+                        File file = new File(path);
+                        if (!file.exists()) {
+                            ToastUtil.show(context, R.string.text_mp4_no_exists);
+                            finish();
+                            return;
+                        }
+                        if (!file.canRead()) {
+                            ToastUtil.show(context, R.string.text_videofile_cant_read);
+                            finish();
+                            return;
+                        }
+                        AppStackManager.getInstance().notifyMediaScan(file);
+                        long fileSize = FileUtils.getFileSize(file);
+                        String formetFileSize = FileUtils.formetFileSize(fileSize);
+                        mFileSizeTv.setText(formetFileSize);
+                    }, throwable -> {
+                        ToastUtil.show(context, R.string.text_parse_videofile_fail);
+                        finish();
+                    });
         }
     }
 }

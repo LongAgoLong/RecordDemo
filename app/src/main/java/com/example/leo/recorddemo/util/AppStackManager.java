@@ -9,6 +9,8 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 
+import com.example.leo.recorddemo.App;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -182,11 +184,11 @@ public class AppStackManager {
     /*
      * 通知Media扫描
      * */
-    public void notifyMediaScan(Context context, File file) {
+    public void notifyMediaScan(File file) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);//发送更新图片信息广播
         Uri uri = Uri.fromFile(file);
         intent.setData(uri);
-        context.getApplicationContext().sendBroadcast(intent);
+        App.getContext().sendBroadcast(intent);
     }
 
     /**
