@@ -28,7 +28,7 @@ public class BaseActivity extends RxAppCompatActivity {
         AppStackManager.getInstance().killSingleActivity(this);
     }
 
-    public RxPermissions getRxPermission() {
+    public RxPermissions rxPermission() {
         if (null == rxPermissions) {
             synchronized (TAG) {
                 if (null == rxPermissions) {

@@ -10,13 +10,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.leo.recorddemo.R;
+import com.example.leo.recorddemo.rom.RomUtil;
+import com.example.leo.recorddemo.rom.Target;
 import com.example.leo.recorddemo.util.AppStackManager;
 import com.example.leo.recorddemo.util.DateUtil;
 import com.example.leo.recorddemo.util.FileUtils;
 import com.example.leo.recorddemo.util.RxRecordDetector;
-import com.example.leo.recorddemo.util.VideoRecordUtil;
 import com.example.leo.recorddemo.util.SDcardUtil;
 import com.example.leo.recorddemo.util.ToastUtil;
+import com.example.leo.recorddemo.util.VideoRecordUtil;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
@@ -46,14 +48,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.recordBtn:
-                getRxPermission()
+                rxPermission()
                         .request(Manifest.permission.CAMERA,
                                 Manifest.permission.RECORD_AUDIO,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
-                                VideoRecordUtil.startRecordNoParam(context);
+                                startRecord();
                             } else {
                                 ToastUtil.show(context, "获取权限失败");
                             }
@@ -72,9 +74,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 return;
             }
             switch (requestCode) {
-                case VideoRecordUtil.CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE:
+                case VideoRecordUtil.CAPTURE_VIDEO_REQUEST_CODE:
                     Uri videoUri = data.getData();
                     String path = FileUtils.getPath(context, videoUri);
+                    dealWithResult(path);
                     recordResultTv.append(path);
                     recordResultTv.append("\n");
                     if (TextUtils.isEmpty(path)) {
@@ -101,13 +104,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    /*
-     * 开始录制
-     * */
     private Disposable disposable;
 
+    /**
+     * 开始录制
+     */
     private void startRecord() {
-        if (!VideoRecordUtil.startRecordNoParams(context)) {
+        if (!VideoRecordUtil.startRecordNoParams(this)) {
             finish();
         } else if (RomUtil.rom() == Target.MIUI) {
             disposable = RxRecordDetector.start(this)
@@ -118,25 +121,43 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         if (null != disposable && !disposable.isDisposed()) {
                             disposable.dispose();
                         }
-                        File file = new File(path);
-                        if (!file.exists()) {
-                            ToastUtil.show(context, R.string.text_mp4_no_exists);
-                            finish();
-                            return;
-                        }
-                        if (!file.canRead()) {
-                            ToastUtil.show(context, R.string.text_videofile_cant_read);
-                            finish();
-                            return;
-                        }
-                        AppStackManager.getInstance().notifyMediaScan(file);
-                        long fileSize = FileUtils.getFileSize(file);
-                        String formetFileSize = FileUtils.formetFileSize(fileSize);
-                        mFileSizeTv.setText(formetFileSize);
+                        dealWithResult(path);
                     }, throwable -> {
                         ToastUtil.show(context, R.string.text_parse_videofile_fail);
                         finish();
                     });
         }
+    }
+
+    /**
+     * 录制结果处理
+     *
+     * @param path
+     */
+    private void dealWithResult(String path) {
+        if (TextUtils.isEmpty(path)) {
+            ToastUtil.show(context, R.string.text_mp4_no_exists);
+            finish();
+            return;
+        }
+        File file = new File(path);
+        if (!file.exists()) {
+            ToastUtil.show(context, R.string.text_mp4_no_exists);
+            finish();
+            return;
+        }
+        if (!file.canRead()) {
+            ToastUtil.show(context, R.string.text_videofile_cant_read);
+            finish();
+            return;
+        }
+        AppStackManager.getInstance().notifyMediaScan(file);
+        recordResultTv.setText("视频路径：\n");
+        recordResultTv.append(path);
+        recordResultTv.append("\n");
+        recordResultTv.append("视频规格：\n");
+        long fileSize = FileUtils.getFileSize(file);
+        String formetFileSize = FileUtils.formetFileSize(fileSize);
+        recordResultTv.append(formetFileSize);
     }
 }

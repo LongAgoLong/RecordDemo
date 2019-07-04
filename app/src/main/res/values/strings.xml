@@ -5,4 +5,8 @@
     <string name="no_SD_card">SD卡无法读取，请重试&#8230;</string>
     <string name="text_permission_youRefuse">您拒绝了%1$s权限的申请&#8230;</string>
     <string name="internet_error_tip">网络错误,请稍后重试&#8230;</string>
+
+    <string name="text_mp4_no_exists">视频文件不存在</string>
+    <string name="text_videofile_cant_read">视频文件无法读取</string>
+    <string name="text_parse_videofile_fail">解析视频失败&#8230;</string>
 </resources>

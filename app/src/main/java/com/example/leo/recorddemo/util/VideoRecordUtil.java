@@ -2,6 +2,7 @@ package com.example.leo.recorddemo.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,12 +27,16 @@ import io.reactivex.Observable;
  */
 
 public final class VideoRecordUtil {
-    public static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 99;
+    public static final int CAPTURE_VIDEO_REQUEST_CODE = 99;
 
-    /*
+    /**
      * 开始录制
-     * */
-    @Deprecated //小米大哥有问题
+     * 小米大哥有问题
+     *
+     * @param context
+     * @return
+     */
+    @Deprecated
     public static String startRecord(Context context) {
         if (AppStackManager.getInstance().checkPermissions(context,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -55,7 +60,7 @@ public final class VideoRecordUtil {
 //                    intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 500);
 //                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
                     // start the Video Capture Intent
-                    ((Activity) context).startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+                    ((Activity) context).startActivityForResult(intent, CAPTURE_VIDEO_REQUEST_CODE);
                     return nyatoRecordPath;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -70,29 +75,58 @@ public final class VideoRecordUtil {
         return null;
     }
 
-    /*
+    /**
+     * 开始录制
      * onActivityResult 需要做判断，miui部分机型拿不到uri
-     * */
-    public static boolean startRecordNoParams(Context context) {
-        if (AppStackManager.getInstance().checkPermissions(context,
+     *
+     * @param activity
+     * @return
+     */
+    public static boolean startRecordNoParams(Activity activity) {
+        if (AppStackManager.getInstance().checkPermissions(activity,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO)) {
-            if (SDcardUtil.isVideo_PATH(context)) {
+            if (SDcardUtil.isVideo_PATH(activity)) {
                 try {
                     Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                    ((Activity) context).startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+                    activity.startActivityForResult(intent, CAPTURE_VIDEO_REQUEST_CODE);
                     return true;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    ToastUtil.show(context, R.string.text_no_camera_app);
+                    ToastUtil.show(activity, R.string.text_no_camera_app);
                 }
             } else {
-                ToastUtil.show(context, R.string.no_SD_card);
+                ToastUtil.show(activity, R.string.no_SD_card);
             }
         } else {
-            ToastUtil.show(context, context.getResources().getString(R.string.text_permission_youRefuse, "相关"));
+            ToastUtil.show(activity, activity.getResources().getString(R.string.text_permission_youRefuse, "相关"));
+        }
+        return false;
+    }
+
+    public static boolean startRecordNoParams(Fragment fragment) {
+        Activity activity = fragment.getActivity();
+        if (AppStackManager.getInstance().checkPermissions(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO)) {
+            if (SDcardUtil.isVideo_PATH(activity)) {
+                try {
+                    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    fragment.startActivityForResult(intent, CAPTURE_VIDEO_REQUEST_CODE);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ToastUtil.show(activity, R.string.text_no_camera_app);
+                }
+            } else {
+                ToastUtil.show(activity, R.string.no_SD_card);
+            }
+        } else {
+            ToastUtil.show(activity, activity.getResources().getString(R.string.text_permission_youRefuse, "相关"));
         }
         return false;
     }
